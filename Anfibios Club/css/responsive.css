@@ -1,0 +1,32 @@
+/* RESPONSIVE */
+
+@media (max-width: 640px) {
+  .header-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .main-nav {
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  section {
+    padding: 20px 16px;
+  }
+
+  .grid-cards {
+    grid-template-columns: 1fr; 
+  }
+
+  .form-container {
+    padding: 16px;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

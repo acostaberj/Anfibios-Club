@@ -1,0 +1,116 @@
+/* FORMULARIO DE CONTACTO */
+
+.contact-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--azul-oscuro);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-container {
+  background-color: var(--blanco);
+  color: var(--azul-oscuro);
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: var(--radio-card);
+  box-shadow: var(--sombra-soft);
+  border: 1px solid #e2e8f0;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.875rem;
+  color: var(--azul-oscuro);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radio-input);
+  font-size: 0.95rem;
+  background-color: #f8fafc;
+  color: var(--gris-texto);
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--azul-principal);
+  background-color: var(--blanco);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.radio-group label {
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 0.875rem;
+}
+
+.terms label {
+  font-weight: normal;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.terms input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--azul-principal);
+}
+
+.btn-submit {
+  display: block;
+  width: 100%;
+  background: var(--azul-principal);
+  color: var(--blanco);
+  border: none;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radio-input);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 20px;
+}
+
+.btn-submit:hover {
+  background-color: #0369a1;
+}
+
+.form-container h4 {
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--turquesa-hover);
+  margin-top: 12px;
+}

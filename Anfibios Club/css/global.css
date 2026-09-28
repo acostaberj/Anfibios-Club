@@ -1,0 +1,36 @@
+/* VARIABLES Y SETUP GLOBAL */
+
+:root {
+  --azul-oscuro: #0f172a;
+  --azul-principal: #0284c7;
+  --celeste-agua: #e0f2fe;
+  --turquesa: #06b6d4;
+  --turquesa-hover: #0891b2;
+  --gris-texto: #334155;
+  --gris-suave: #64748b;
+  --blanco: #ffffff;
+  --sombra-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --sombra-hover: 0 20px 30px -10px rgba(2, 132, 199, 0.15);
+  --radio-card: 16px;
+  --radio-input: 10px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  color: var(--gris-texto);
+  background: #f8fafc linear-gradient(135deg, #e0f2fe 0%, #f1f5f9 50%, #bae6fd 100%);
+  min-height: 100vh;
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
