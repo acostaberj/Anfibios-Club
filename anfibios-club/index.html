@@ -222,7 +222,7 @@
 
           <div class="form-group">
             <label for="nombre">Nombre Completo *</label>
-            <input type="text" id="nombre" name="nombre" required placeholder="Ej. Sahara Ayus">
+            <input type="text" id="nombre" name="nombre" required  placeholder="Ej. Sahara Ayus">
           </div>
 
           <div class="form-group">
@@ -232,7 +232,8 @@
 
           <div class="form-group">
             <label for="tel">Celular *</label>
-            <input type="tel" id="tel" name="tel" required placeholder="Ej. 3104325368">
+            <input type="tel" id="tel" name="tel" required inputmode="numeric" pattern="[0-9]{10}"
+              maxlength="10"placeholder="Ej. 3104325368">
           </div>
 
           <div class="form-group">
@@ -244,9 +245,10 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group"
             <label for="emergencia">Teléfono de Emergencia *</label>
-            <input type="tel" id="emergencia" name="emergencia" required placeholder="Contacto en caso de emergencia">
+            <input type="tel" id="emergencia" name="emergencia" required inputmode="numeric" pattern="[0-9]{10}"
+              maxlength="10"placeholder="Contacto en caso de emergencia">
           </div>
 
           <div class="form-group terms">
