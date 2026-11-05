@@ -14,6 +14,8 @@ const emergencia = document.getElementById("emergencia");
 const terminos = document.getElementById("terminos");
 
 
+const mensajeConfirmacion = document.getElementById("mensajeConfirmacion");
+
 
   // 2. RESTRINGIR LOS CARACTERES PERMITIDOS
 
@@ -81,10 +83,17 @@ function mostrarDatos() {
 
    //5. DETECTAR EL ENVÍO DEL FORMULARIO
 
+// Detectamos cuando el usuario envía el formulario.
 formulario.addEventListener("submit", function(event) {
 
+    // Evitamos que la página se recargue.
     event.preventDefault();
 
+    // Mostramos los datos del estudiante en la consola.
     mostrarDatos();
+
+    // Mostramos un mensaje de confirmación en la página.
+    mensajeConfirmacion.textContent =
+        "¡Gracias por inscribirte en Anfibios Club! Hemos recibido tus datos.";
 
 });
