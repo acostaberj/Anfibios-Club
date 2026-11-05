@@ -93,7 +93,7 @@ p em {
   font-size: 0.95rem;
 }
 
-.instructor-name, .estilos-title, .beneficios-title {
+.instructor-name, .estilos-title {
   color: var(--azul-oscuro);
   font-size: 1.2rem;
   font-weight: 700;
