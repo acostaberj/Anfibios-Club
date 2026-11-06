@@ -79,21 +79,82 @@ function mostrarDatos() {
 
 }
 
+// 5. RECUPERAR LOS ESTUDIANTES GUARDADOS
+
+function obtenerEstudiantes() {
+
+    const datosGuardados = localStorage.getItem("estudiantes");
+
+    const estudiantes = JSON.parse(datosGuardados) || [];
+
+    return estudiantes;
+
+}
 
 
-   //5. DETECTAR EL ENVÍO DEL FORMULARIO
 
-// Detectamos cuando el usuario envía el formulario.
+// 6. REGISTRAR UN NUEVO ESTUDIANTE
+
+function registrarEstudiante() {
+
+    // Recuperar los estudiantes existentes
+    const estudiantes = obtenerEstudiantes();
+
+    // Crear el objeto con los datos del nuevo estudiante
+    const nuevoEstudiante = {
+        nombre: nombre.value.trim(),
+        fechaNacimiento: fechaNacimiento.value,
+        celular: celular.value,
+        emergencia: emergencia.value,
+        nivel: obtenerNivel()
+    };
+
+    // Buscar si el estudiante ya está registrado
+    const duplicado = estudiantes.find(function(estudiante) {
+
+        return estudiante.nombre.toLowerCase() === nuevoEstudiante.nombre.toLowerCase() &&
+               estudiante.fechaNacimiento === nuevoEstudiante.fechaNacimiento;
+
+    });
+
+    // Comprobar si existe un registro duplicado
+    if (duplicado) {
+
+        mensajeConfirmacion.textContent =
+            "Este estudiante ya se encuentra registrado.";
+
+        return false;
+
+    }
+
+    // Agregar el nuevo estudiante al arreglo
+    estudiantes.push(nuevoEstudiante);
+
+    // Guardar nuevamente todos los estudiantes
+    localStorage.setItem("estudiantes", JSON.stringify(estudiantes));
+
+    mensajeConfirmacion.textContent =
+        "¡Inscripción realizada correctamente!";
+
+    return true;
+}
+
+
+
+
+// 7. DETECTAR EL ENVÍO DEL FORMULARIO
+
 formulario.addEventListener("submit", function(event) {
 
-    // Evitamos que la página se recargue.
     event.preventDefault();
+    const registroExitoso = registrarEstudiante();
 
-    // Mostramos los datos del estudiante en la consola.
-    mostrarDatos();
+    if (registroExitoso) {
 
-    // Mostramos un mensaje de confirmación en la página.
-    mensajeConfirmacion.textContent =
-        "¡Gracias por inscribirte en Anfibios Club! Hemos recibido tus datos.";
+        mostrarDatos();
+
+        formulario.reset();
+
+    }
 
 });
