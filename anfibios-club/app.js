@@ -144,16 +144,56 @@ function registrarEstudiante() {
 
 // 7. DETECTAR EL ENVÍO DEL FORMULARIO
 
-formulario.addEventListener("submit", function(event) {
+
+formulario.addEventListener("submit", async function(event) {
 
     event.preventDefault();
-    const registroExitoso = registrarEstudiante();
 
-    if (registroExitoso) {
+    // Obtener los datos del estudiante
+    const nuevoEstudiante = {
+        nombre: nombre.value.trim(),
+        fechaNacimiento: fechaNacimiento.value,
+        celular: celular.value,
+        emergencia: emergencia.value,
+        nivel: obtenerNivel()
+    };
 
-        mostrarDatos();
+    try {
 
+        // Enviar los datos al backend
+        const respuesta = await fetch("http://localhost:3000/api/estudiantes", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(nuevoEstudiante)
+
+        });
+
+        const datos = await respuesta.json();
+
+        if (!respuesta.ok) {
+            throw new Error(datos.mensaje || "No se pudo realizar la inscripción.");
+        }
+
+        // Mostrar confirmación
+        mensajeConfirmacion.textContent = datos.mensaje;
+
+        // Mostrar los datos en la consola
+        console.log("Estudiante enviado:", datos.estudiante);
+
+        // Limpiar el formulario
         formulario.reset();
+
+    } catch (error) {
+
+        mensajeConfirmacion.textContent =
+            "No fue posible enviar la inscripción. Inténtalo nuevamente.";
+
+        console.error("Error al registrar:", error);
 
     }
 
