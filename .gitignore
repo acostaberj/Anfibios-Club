@@ -1,0 +1,4 @@
+node_modules/
+anfibios.db
+.env
+.DS_Store
