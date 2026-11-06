@@ -41,11 +41,9 @@ function crearAdministradorInicial() {
     const contraseña = process.env.ADMIN_PASSWORD;
 
     if (!usuario || !contraseña) {
-
         throw new Error(
             "Faltan las credenciales del administrador en .env"
         );
-
     }
 
     const administradorExistente = db.prepare(`
@@ -73,7 +71,6 @@ function crearAdministradorInicial() {
         console.log("El administrador ya existe.");
 
     }
-
 }
 
 crearAdministradorInicial();
@@ -86,21 +83,17 @@ function verificarToken(req, res, next) {
     const encabezado = req.headers["authorization"];
 
     if (!encabezado) {
-
         return res.status(401).json({
             mensaje: "Acceso denegado. Debes iniciar sesión."
         });
-
     }
 
     const partes = encabezado.split(" ");
 
     if (partes.length !== 2 || partes[0] !== "Bearer") {
-
         return res.status(401).json({
             mensaje: "Formato de autenticación inválido."
         });
-
     }
 
     const token = partes[1];
@@ -127,7 +120,6 @@ function verificarToken(req, res, next) {
         });
 
     }
-
 }
 
 
@@ -152,7 +144,6 @@ app.post("/api/estudiantes", function(req, res) {
         nivel
     } = req.body || {};
 
-
     // VALIDAR LOS DATOS
 
     if (
@@ -174,7 +165,6 @@ app.post("/api/estudiantes", function(req, res) {
 
     }
 
-
     try {
 
         // COMPROBAR SI EL ESTUDIANTE YA EXISTE
@@ -186,7 +176,6 @@ app.post("/api/estudiantes", function(req, res) {
             AND fecha_nacimiento = ?
         `).get(nombre, fechaNacimiento);
 
-
         if (estudianteExistente) {
 
             return res.status(409).json({
@@ -195,8 +184,7 @@ app.post("/api/estudiantes", function(req, res) {
 
         }
 
-
-        // PREPARAR LA INSERCIÓN
+        // INSERTAR EL ESTUDIANTE
 
         const insertarEstudiante = db.prepare(`
             INSERT INTO estudiantes (
@@ -209,9 +197,6 @@ app.post("/api/estudiantes", function(req, res) {
             VALUES (?, ?, ?, ?, ?)
         `);
 
-
-        // GUARDAR LOS DATOS
-
         const resultado = insertarEstudiante.run(
             nombre.trim(),
             fechaNacimiento,
@@ -220,23 +205,17 @@ app.post("/api/estudiantes", function(req, res) {
             nivel.trim()
         );
 
-
         return res.status(201).json({
-
             mensaje: "Inscripción guardada correctamente.",
             id: resultado.lastInsertRowid
-
         });
-
 
     } catch (error) {
 
         if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
-
             return res.status(409).json({
                 mensaje: "Este estudiante ya está registrado."
             });
-
         }
 
         console.error("Error al guardar estudiante:", error);
@@ -256,7 +235,6 @@ app.post("/api/admin/login", async function(req, res) {
 
     const { usuario, contraseña } = req.body || {};
 
-
     // VALIDAR LOS DATOS
 
     if (
@@ -272,7 +250,6 @@ app.post("/api/admin/login", async function(req, res) {
 
     }
 
-
     try {
 
         // BUSCAR EL ADMINISTRADOR
@@ -283,7 +260,6 @@ app.post("/api/admin/login", async function(req, res) {
             WHERE usuario = ?
         `).get(usuario.trim());
 
-
         if (!administrador) {
 
             return res.status(401).json({
@@ -292,14 +268,12 @@ app.post("/api/admin/login", async function(req, res) {
 
         }
 
-
         // COMPARAR LA CONTRASEÑA
 
         const contraseñaCorrecta = await bcrypt.compare(
             contraseña,
             administrador.password_hash
         );
-
 
         if (!contraseñaCorrecta) {
 
@@ -309,15 +283,11 @@ app.post("/api/admin/login", async function(req, res) {
 
         }
 
-
         // VERIFICAR LA CLAVE PRIVADA
 
         if (!process.env.JWT_SECRET) {
-
             throw new Error("Falta configurar JWT_SECRET.");
-
         }
-
 
         // GENERAR TOKEN JWT
 
@@ -332,17 +302,11 @@ app.post("/api/admin/login", async function(req, res) {
             }
         );
 
-
-        // RESPONDER AL ADMINISTRADOR
-
         return res.status(200).json({
-
             mensaje: "Inicio de sesión exitoso.",
             token: token,
             usuario: administrador.usuario
-
         });
-
 
     } catch (error) {
 
@@ -379,14 +343,10 @@ app.get(
                 ORDER BY fecha_registro DESC
             `).all();
 
-
             return res.status(200).json({
-
                 mensaje: "Estudiantes consultados correctamente.",
                 estudiantes: estudiantes
-
             });
-
 
         } catch (error) {
 
@@ -396,9 +356,7 @@ app.get(
             );
 
             return res.status(500).json({
-
                 mensaje: "No fue posible consultar los estudiantes."
-
             });
 
         }
@@ -407,7 +365,163 @@ app.get(
 );
 
 
-// 11. INICIAR EL SERVIDOR
+// 11. EDITAR ESTUDIANTES - RUTA PRIVADA
+
+app.put(
+    "/api/admin/estudiantes/:id",
+    verificarToken,
+    function(req, res) {
+
+        const id = Number(req.params.id);
+
+        const {
+            nombre,
+            fechaNacimiento,
+            celular,
+            emergencia,
+            nivel
+        } = req.body || {};
+
+        // VALIDAR IDENTIFICADOR
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                mensaje: "Identificador de estudiante inválido."
+            });
+        }
+
+        // VALIDAR DATOS
+
+        if (
+            typeof nombre !== "string" ||
+            typeof fechaNacimiento !== "string" ||
+            typeof celular !== "string" ||
+            typeof emergencia !== "string" ||
+            typeof nivel !== "string" ||
+            !nombre.trim() ||
+            !fechaNacimiento.trim() ||
+            !celular.trim() ||
+            !emergencia.trim() ||
+            !nivel.trim()
+        ) {
+
+            return res.status(400).json({
+                mensaje: "Todos los campos son obligatorios."
+            });
+
+        }
+
+        try {
+
+            // COMPROBAR SI EXISTE EL ESTUDIANTE
+
+            const estudiante = db.prepare(`
+                SELECT id
+                FROM estudiantes
+                WHERE id = ?
+            `).get(id);
+
+            if (!estudiante) {
+                return res.status(404).json({
+                    mensaje: "Estudiante no encontrado."
+                });
+            }
+
+            // ACTUALIZAR LOS DATOS
+
+            db.prepare(`
+                UPDATE estudiantes
+                SET
+                    nombre = ?,
+                    fecha_nacimiento = ?,
+                    celular = ?,
+                    emergencia = ?,
+                    nivel = ?
+                WHERE id = ?
+            `).run(
+                nombre.trim(),
+                fechaNacimiento,
+                celular.trim(),
+                emergencia.trim(),
+                nivel.trim(),
+                id
+            );
+
+            return res.status(200).json({
+                mensaje: "Estudiante actualizado correctamente."
+            });
+
+        } catch (error) {
+
+            if (error.code === "SQLITE_CONSTRAINT_UNIQUE") {
+                return res.status(409).json({
+                    mensaje: "Ya existe un estudiante con ese nombre y fecha de nacimiento."
+                });
+            }
+
+            console.error("Error al editar estudiante:", error);
+
+            return res.status(500).json({
+                mensaje: "No fue posible actualizar el estudiante."
+            });
+
+        }
+
+    }
+);
+
+
+// 12. ELIMINAR ESTUDIANTES - RUTA PRIVADA
+
+app.delete(
+    "/api/admin/estudiantes/:id",
+    verificarToken,
+    function(req, res) {
+
+        const id = Number(req.params.id);
+
+        // VALIDAR IDENTIFICADOR
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                mensaje: "Identificador de estudiante inválido."
+            });
+        }
+
+        try {
+
+            // ELIMINAR EL ESTUDIANTE
+
+            const resultado = db.prepare(`
+                DELETE FROM estudiantes
+                WHERE id = ?
+            `).run(id);
+
+            if (resultado.changes === 0) {
+                return res.status(404).json({
+                    mensaje: "Estudiante no encontrado."
+                });
+            }
+
+            return res.status(200).json({
+                mensaje: "Estudiante eliminado correctamente."
+            });
+
+        } catch (error) {
+
+            console.error("Error al eliminar estudiante:", error);
+
+            return res.status(500).json({
+                mensaje: "No fue posible eliminar el estudiante."
+            });
+
+        }
+
+    }
+);
+
+
+// 13. INICIAR EL SERVIDOR
 
 app.listen(PORT, function() {
 
