@@ -1,122 +1,194 @@
 
-/* =====================================================
-   PROYECTO: ANFIBIOS CLUB
-   ARCHIVO: app.js
-   DESCRIPCIÓN: Funcionalidades del formulario
-===================================================== */
+/* ============================================
+   ANFIBIOS CLUB
+   INSCRIPCIONES DE ESTUDIANTES
+============================================ */
 
-// 1. IDENTIFICAR LOS ELEMENTOS DEL FORMULARIO
+document.addEventListener("DOMContentLoaded", function () {
 
-const formulario = document.getElementById("formularioInscripcion");
+    // 1. OBTENER LOS ELEMENTOS DEL FORMULARIO
 
-const nombre = document.getElementById("nombre");
-const fechaNacimiento = document.getElementById("fecha_nacimiento");
-const celular = document.getElementById("tel");
-const emergencia = document.getElementById("emergencia");
+    const formularioInscripcion =
+        document.getElementById("formularioInscripcion");
 
-const mensajeConfirmacion = document.getElementById("mensajeConfirmacion");
+    const mensajeConfirmacion =
+        document.getElementById("mensajeConfirmacion");
 
 
-// 2. OBTENER EL NIVEL DE NATACIÓN SELECCIONADO
+    // 2. OBTENER EL NIVEL SELECCIONADO
 
-function obtenerNivel() {
+    function obtenerNivel() {
 
-    const nivelSeleccionado = document.querySelector(
-        'input[name="nivel"]:checked'
-    );
+        const nivelSeleccionado =
+            document.querySelector('input[name="nivel"]:checked');
 
-    if (nivelSeleccionado) {
-        return nivelSeleccionado.value;
-    }
+        return nivelSeleccionado
+            ? nivelSeleccionado.value
+            : "";
 
-    return "";
-}
-
-
-// 3. DETECTAR EL ENVÍO DEL FORMULARIO
-
-formulario.addEventListener("submit", async function(event) {
-
-    // Evitar que la página se recargue
-    event.preventDefault();
-
-    // Obtener los datos del estudiante
-    const nuevoEstudiante = {
-
-        nombre: nombre.value.trim(),
-
-        fechaNacimiento: fechaNacimiento.value,
-
-        celular: celular.value.trim(),
-
-        emergencia: emergencia.value.trim(),
-
-        nivel: obtenerNivel()
-
-    };
-
-    // Comprobar que exista un nivel seleccionado
-    if (!nuevoEstudiante.nivel) {
-
-        mensajeConfirmacion.textContent =
-            "Por favor, selecciona un nivel de natación.";
-
-        return;
     }
 
 
-    // 4. ENVIAR LOS DATOS AL BACKEND
+    // 3. ESCUCHAR EL ENVÍO DEL FORMULARIO
 
-    try {
+    if (formularioInscripcion) {
 
-        const respuesta = await fetch(
-            "http://localhost:3000/api/estudiantes",
-            {
-                method: "POST",
+        formularioInscripcion.addEventListener(
+            "submit",
+            async function (event) {
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                event.preventDefault();
 
-                body: JSON.stringify(nuevoEstudiante)
+                // Obtener los campos
+
+                const nombre =
+                    document.getElementById("nombre");
+
+                const fechaNacimiento =
+                    document.getElementById("fecha_nacimiento");
+
+                const celular =
+                    document.getElementById("tel");
+
+                const emergencia =
+                    document.getElementById("emergencia");
+
+                const terminos =
+                    document.getElementById("terminos");
+
+
+                // 4. VALIDAR LOS CAMPOS
+
+                if (
+                    !nombre ||
+                    !fechaNacimiento ||
+                    !celular ||
+                    !emergencia ||
+                    !terminos
+                ) {
+
+                    console.error(
+                        "No se encontraron todos los campos del formulario."
+                    );
+
+                    return;
+
+                }
+
+
+                if (!terminos.checked) {
+
+                    mensajeConfirmacion.textContent =
+                        "Debes aceptar los términos y condiciones.";
+
+                    return;
+
+                }
+
+
+                // Comprobar el nivel seleccionado
+
+                const nivel = obtenerNivel();
+
+                if (!nivel) {
+
+                    mensajeConfirmacion.textContent =
+                        "Debes seleccionar un nivel de natación.";
+
+                    return;
+
+                }
+
+
+                // 5. PREPARAR LOS DATOS DEL ESTUDIANTE
+
+                const estudiante = {
+
+                    nombre: nombre.value.trim(),
+
+                    fechaNacimiento:
+                        fechaNacimiento.value,
+
+                    celular: celular.value.trim(),
+
+                    emergencia: emergencia.value.trim(),
+
+                    nivel: nivel
+
+                };
+
+
+                try {
+
+                    mensajeConfirmacion.textContent =
+                        "Registrando estudiante...";
+
+
+                    // 6. ENVIAR LOS DATOS AL SERVIDOR
+
+                    const respuesta = await fetch(
+                        "http://localhost:3000/api/estudiantes",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify(estudiante)
+
+                        }
+                    );
+
+
+                    const datos = await respuesta.json();
+
+
+                    // 7. COMPROBAR LA RESPUESTA
+
+                    if (!respuesta.ok) {
+
+                        throw new Error(
+                            datos.mensaje ||
+                            "No fue posible registrar al estudiante."
+                        );
+
+                    }
+
+
+                    // 8. MOSTRAR CONFIRMACIÓN
+
+                    mensajeConfirmacion.textContent =
+                        datos.mensaje ||
+                        "¡Inscripción realizada correctamente!";
+
+
+                    // 9. LIMPIAR EL FORMULARIO
+
+                    formularioInscripcion.reset();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Error en la inscripción:",
+                        error
+                    );
+
+                    mensajeConfirmacion.textContent =
+                        error.message;
+
+                }
+
             }
         );
 
-
-        // Convertir la respuesta del servidor a JSON
-        const datos = await respuesta.json();
-
-
-        // 5. COMPROBAR SI HUBO ALGÚN ERROR
-
-        if (!respuesta.ok) {
-
-            throw new Error(
-                datos.mensaje || "No se pudo realizar la inscripción."
-            );
-
-        }
-
-
-        // 6. MOSTRAR CONFIRMACIÓN
-
-        mensajeConfirmacion.textContent = datos.mensaje;
-
-        console.log("Estudiante registrado:", nuevoEstudiante);
-
-
-        // 7. LIMPIAR EL FORMULARIO
-
-        formulario.reset();
-
-
-    } catch (error) {
-
-        // Mostrar el mensaje que devuelve el backend
-        mensajeConfirmacion.textContent = error.message;
-
-        console.error("Error al registrar:", error);
-
     }
+
+
+    console.log(
+        "Anfibios Club: formulario de inscripción preparado correctamente."
+    );
 
 });
