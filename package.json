@@ -9,14 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "dotenv": "^18.0.9",
-    "jsonwebtoken": "^9.0.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.0.0",
-    "vite": "^7.1.0"
+    "vite": "^7.1.0",
+    "@vitejs/plugin-react": "^5.0.0"
   }
 }
