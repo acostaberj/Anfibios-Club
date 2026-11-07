@@ -38,20 +38,7 @@ db.exec(`
     ON estudiantes (LOWER(TRIM(nombre)), fecha_nacimiento)
 `);
 
-
-// 5. CREAR LA TABLA DE ADMINISTRADORES
-
-db.exec(`
-    CREATE TABLE IF NOT EXISTS administradores (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario TEXT NOT NULL UNIQUE,
-        password_hash TEXT NOT NULL,
-        fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
-
-
-// 6. EXPORTAR LA CONEXIÓN
+// 5. EXPORTAR LA CONEXIÓN
 
 module.exports = db;
 

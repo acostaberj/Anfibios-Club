@@ -1,4 +1,15 @@
+# Dependencias
 node_modules/
-anfibios.db
+
+# Variables privadas
 .env
+.env.*
+!.env.example
+
+# Base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos del sistema
 .DS_Store

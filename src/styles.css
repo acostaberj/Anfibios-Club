@@ -1,0 +1,20 @@
+@import './styles/global.css';
+@import './styles/header.css';
+@import './styles/contenido.css';
+@import './styles/cards.css';
+@import './styles/contacto.css';
+@import './styles/footer-nav.css';
+@import './styles/responsive.css';
+/* Pequeños ajustes para el formulario y el panel */
+section { scroll-margin-top: 100px; }
+.mensaje-confirmacion { margin-top: 12px; font-weight: 700; color: #075985; }
+.admin-page { max-width: 1050px; margin: 40px auto; padding: 24px; background: white; border-radius: 16px; }
+.admin-page h1, .admin-page h2 { margin-bottom: 16px; }
+.admin-page form { display: grid; gap: 12px; margin-bottom: 24px; }
+.admin-page input, .admin-page select { padding: 10px; border: 1px solid #94a3b8; border-radius: 8px; width: 100%; }
+.admin-page button { cursor: pointer; padding: 9px 14px; border: 0; border-radius: 8px; background: #0284c7; color: white; margin: 4px; }
+.admin-page .peligro { background: #b91c1c; }
+.admin-page table { border-collapse: collapse; width: 100%; }
+.admin-page td, .admin-page th { padding: 10px; text-align: left; border-bottom: 1px solid #cbd5e1; }
+.admin-tabla { overflow-x: auto; }
+@media (max-width: 640px) { .admin-page { margin: 12px; padding: 14px; } }
