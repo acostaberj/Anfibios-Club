@@ -6,12 +6,15 @@
     gap: 8px;
   }
 
-  .main-nav {
-    width: 100%;
-    justify-content: center;
-    overflow-x: auto;
-    padding-bottom: 4px;
-  }
+  
+.main-nav {
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+  overflow-x: visible;
+  padding: 4px 8px;
+  gap: 6px;
+}
 
   section {
     padding: 20px 16px;
