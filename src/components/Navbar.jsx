@@ -20,10 +20,10 @@ export default function Navbar() {
           <a href="#estilos">Estilos</a>
           <a href="#beneficios">Beneficios</a>
           <a href="#contacto">Contacto</a>
-
-          <a href={`${import.meta.env.BASE_URL}admin`}>
+          <a href={`${import.meta.env.BASE_URL}#/admin`}>
             Administración
           </a>
+
         </nav>
 
       </div>

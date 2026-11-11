@@ -1,4 +1,6 @@
 
+import React, { useState, useEffect } from 'react';
+
 import Navbar from './components/Navbar.jsx';
 import Inicio from './components/Inicio.jsx';
 import Mision from './components/Mision.jsx';
@@ -11,13 +13,26 @@ import Admin from './components/Admin.jsx';
 import Chatbot from './components/Chatbot.jsx';
 
 export default function App() {
+  const [ruta, setRuta] = useState(window.location.hash);
+
+  useEffect(() => {
+    const actualizarRuta = () => {
+      setRuta(window.location.hash);
+    };
+
+    window.addEventListener('hashchange', actualizarRuta);
+
+    return () => {
+      window.removeEventListener('hashchange', actualizarRuta);
+    };
+  }, []);
 
   // Panel administrativo
-  if (window.location.pathname.replace(/\/$/, '').endsWith('/admin')) {
+  if (ruta === '#/admin') {
     return <Admin />;
   }
 
-  // Página pública
+  // Página principal
   return (
     <>
       <Navbar />
@@ -33,7 +48,6 @@ export default function App() {
 
       <Footer />
 
-      {/* Asistente virtual de Anfibios Club */}
       <Chatbot />
     </>
   );

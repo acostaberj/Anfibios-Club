@@ -1,28 +1,32 @@
+
 import { useState } from 'react';
 
-// Esta es la dirección de nuestro servidor.
+// Dirección del servidor
 const API = 'https://anfibios-club-backend.onrender.com/api';
 
 export default function Admin() {
   const [usuario, setUsuario] = useState('');
   const [clave, setClave] = useState('');
-  const [token, setToken] = useState(sessionStorage.getItem('anfibios_token') || '');
+  const [token, setToken] = useState(
+    sessionStorage.getItem('anfibios_token') || ''
+  );
   const [estudiantes, setEstudiantes] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const [editando, setEditando] = useState(null);
 
-  // Esta función envía solicitudes al servidor y muestra errores claros.
+  // Envía solicitudes al servidor
   async function solicitar(ruta, opciones = {}, credencial = token) {
     const respuesta = await fetch(API + ruta, {
       ...opciones,
       headers: {
         'Content-Type': 'application/json',
-        ...(credencial ? { Authorization: 'Bearer ' + credencial } : {}),
+        ...(credencial
+          ? { Authorization: 'Bearer ' + credencial }
+          : {}),
         ...opciones.headers
       }
     });
 
-    // Leemos la respuesta como texto para evitar errores si viene vacía.
     const texto = await respuesta.text();
     let datos = {};
 
@@ -35,16 +39,23 @@ export default function Admin() {
     }
 
     if (!respuesta.ok) {
-      throw new Error(datos.mensaje || 'No se pudo completar la solicitud.');
+      throw new Error(
+        datos.mensaje || 'No se pudo completar la solicitud.'
+      );
     }
 
     return datos;
   }
 
-  // Carga la lista de estudiantes registrados.
+  // Carga los estudiantes registrados
   async function cargar(credencial = token) {
     try {
-      const lista = await solicitar('/admin/estudiantes', {}, credencial);
+      const lista = await solicitar(
+        '/admin/estudiantes',
+        {},
+        credencial
+      );
+
       setEstudiantes(lista);
       setMensaje('');
     } catch (error) {
@@ -52,27 +63,32 @@ export default function Admin() {
     }
   }
 
-  // Envía el usuario y la contraseña al servidor.
+  // Inicio de sesión
   async function ingresar(evento) {
     evento.preventDefault();
     setMensaje('');
 
     try {
-      const datos = await solicitar('/admin/login', {
-        method: 'POST',
-        body: JSON.stringify({ usuario, clave })
-      }, '');
+      const datos = await solicitar(
+        '/admin/login',
+        {
+          method: 'POST',
+          body: JSON.stringify({ usuario, clave })
+        },
+        ''
+      );
 
       sessionStorage.setItem('anfibios_token', datos.token);
       setToken(datos.token);
       setClave('');
+
       await cargar(datos.token);
     } catch (error) {
       setMensaje(error.message);
     }
   }
 
-  // Cierra la sesión del administrador.
+  // Cerrar sesión
   function salir() {
     sessionStorage.removeItem('anfibios_token');
     setToken('');
@@ -81,12 +97,17 @@ export default function Admin() {
     setMensaje('');
   }
 
-  // Elimina un estudiante después de pedir confirmación.
+  // Eliminar estudiante
   async function borrar(id) {
-    if (!window.confirm('¿Estás seguro de eliminar este estudiante?')) return;
+    if (!window.confirm('¿Estás seguro de eliminar este estudiante?')) {
+      return;
+    }
 
     try {
-      await solicitar('/admin/estudiantes/' + id, { method: 'DELETE' });
+      await solicitar('/admin/estudiantes/' + id, {
+        method: 'DELETE'
+      });
+
       await cargar();
       setMensaje('Estudiante eliminado correctamente.');
     } catch (error) {
@@ -94,7 +115,7 @@ export default function Admin() {
     }
   }
 
-  // Guarda los cambios de un estudiante.
+  // Guardar cambios
   async function guardar(evento) {
     evento.preventDefault();
 
@@ -114,8 +135,15 @@ export default function Admin() {
 
   return (
     <main className="admin-page">
+
       <h1>Administración de Anfibios Club</h1>
-      <p><a href="/">Volver a la página principal</a></p>
+
+      {/* Regresar a la página principal */}
+      <p>
+        <a href={import.meta.env.BASE_URL}>
+          Volver a la página principal
+        </a>
+      </p>
 
       {!token ? (
         <form onSubmit={ingresar}>
@@ -140,13 +168,20 @@ export default function Admin() {
             />
           </label>
 
-          <button type="submit">Iniciar sesión</button>
+          <button type="submit">
+            Iniciar sesión
+          </button>
         </form>
       ) : (
         <>
           <p>
-            <button onClick={() => cargar()}>Actualizar registros</button>
-            <button onClick={salir}>Cerrar sesión</button>
+            <button onClick={() => cargar()}>
+              Actualizar registros
+            </button>
+
+            <button onClick={salir}>
+              Cerrar sesión
+            </button>
           </p>
 
           {editando && (
@@ -158,7 +193,10 @@ export default function Admin() {
                 <input
                   value={editando.nombre}
                   onChange={(evento) =>
-                    setEditando({ ...editando, nombre: evento.target.value })
+                    setEditando({
+                      ...editando,
+                      nombre: evento.target.value
+                    })
                   }
                   required
                 />
@@ -170,7 +208,10 @@ export default function Admin() {
                   type="date"
                   value={editando.fecha_nacimiento}
                   onChange={(evento) =>
-                    setEditando({ ...editando, fecha_nacimiento: evento.target.value })
+                    setEditando({
+                      ...editando,
+                      fecha_nacimiento: evento.target.value
+                    })
                   }
                   required
                 />
@@ -181,7 +222,10 @@ export default function Admin() {
                 <input
                   value={editando.celular}
                   onChange={(evento) =>
-                    setEditando({ ...editando, celular: evento.target.value })
+                    setEditando({
+                      ...editando,
+                      celular: evento.target.value
+                    })
                   }
                   pattern="[0-9]{10}"
                   required
@@ -193,7 +237,10 @@ export default function Admin() {
                 <input
                   value={editando.emergencia}
                   onChange={(evento) =>
-                    setEditando({ ...editando, emergencia: evento.target.value })
+                    setEditando({
+                      ...editando,
+                      emergencia: evento.target.value
+                    })
                   }
                   pattern="[0-9]{10}"
                   required
@@ -205,7 +252,10 @@ export default function Admin() {
                 <select
                   value={editando.nivel}
                   onChange={(evento) =>
-                    setEditando({ ...editando, nivel: evento.target.value })
+                    setEditando({
+                      ...editando,
+                      nivel: evento.target.value
+                    })
                   }
                 >
                   <option value="basico">Básico</option>
@@ -214,12 +264,22 @@ export default function Admin() {
                 </select>
               </label>
 
-              <button type="submit">Guardar cambios</button>
-              <button type="button" onClick={() => setEditando(null)}>Cancelar</button>
+              <button type="submit">
+                Guardar cambios
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEditando(null)}
+              >
+                Cancelar
+              </button>
             </form>
           )}
 
-          <h2>Estudiantes registrados: {estudiantes.length}</h2>
+          <h2>
+            Estudiantes registrados: {estudiantes.length}
+          </h2>
 
           <div className="admin-tabla">
             <table>
@@ -233,6 +293,7 @@ export default function Admin() {
                   <th>Acciones</th>
                 </tr>
               </thead>
+
               <tbody>
                 {estudiantes.map((estudiante) => (
                   <tr key={estudiante.id}>
@@ -241,9 +302,18 @@ export default function Admin() {
                     <td>{estudiante.celular}</td>
                     <td>{estudiante.emergencia}</td>
                     <td>{estudiante.nivel}</td>
+
                     <td>
-                      <button onClick={() => setEditando(estudiante)}>Editar</button>
-                      <button className="peligro" onClick={() => borrar(estudiante.id)}>
+                      <button
+                        onClick={() => setEditando(estudiante)}
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        className="peligro"
+                        onClick={() => borrar(estudiante.id)}
+                      >
                         Eliminar
                       </button>
                     </td>
@@ -255,7 +325,10 @@ export default function Admin() {
         </>
       )}
 
-      <p role="status" aria-live="polite">{mensaje}</p>
+      <p role="status" aria-live="polite">
+        {mensaje}
+      </p>
+
     </main>
   );
 }
