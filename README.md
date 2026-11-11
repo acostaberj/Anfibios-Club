@@ -17,6 +17,6 @@ Abrr la dirección que muestre Vite (normalmente `http://localhost:5173`).
 
 Usar el usuario y la contraseña que configuraste en `backend/.env`.
 
-## 4. Cerrar el proyecto
+## 2. Cerrar el proyecto
 En cada terminal presiona `Ctrl + C`.
 
