@@ -5,19 +5,24 @@
    DESCRIPCIÓN: Configuración de la base de datos
 ===================================================== */
 
-// 1. IMPORTAR LIBRERÍAS
-
 const Database = require("better-sqlite3");
 const path = require("path");
+const fs = require("fs");
 
-// 2. ESTABLECER LA UBICACIÓN DE LA BASE DE DATOS
+// Detectar si estamos en Render o en desarrollo local
+const rutaBaseDatos = process.env.RENDER
+  ? "/var/data/anfibios.db"
+  : path.join(__dirname, "anfibios.db");
 
-const rutaBaseDatos = path.join(__dirname, "anfibios.db");
+// Crear la carpeta si no existe
+fs.mkdirSync(path.dirname(rutaBaseDatos), {
+  recursive: true
+});
 
+// Conectar con SQLite
 const db = new Database(rutaBaseDatos);
 
-// 3. CREAR LA TABLA DE ESTUDIANTES
-
+// Crear tabla de estudiantes
 db.exec(`
     CREATE TABLE IF NOT EXISTS estudiantes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,15 +35,12 @@ db.exec(`
     )
 `);
 
-// 4. CREAR RESTRICCIÓN PARA EVITAR DUPLICADOS
-
+// Evitar estudiantes duplicados
 db.exec(`
     CREATE UNIQUE INDEX IF NOT EXISTS
     idx_estudiante_nombre_fecha
     ON estudiantes (LOWER(TRIM(nombre)), fecha_nacimiento)
 `);
-
-// 5. EXPORTAR LA CONEXIÓN
 
 module.exports = db;
 
