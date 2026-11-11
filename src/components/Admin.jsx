@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // Esta es la dirección de nuestro servidor.
-const API = '/api';
+const API = 'https://anfibios-club-backend.onrender.com/api';
 
 export default function Admin() {
   const [usuario, setUsuario] = useState('');

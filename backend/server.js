@@ -26,7 +26,13 @@ const app = express();
 // 2. CONFIGURACION DEL SERVIDOR
 // ==========================================
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://acostaberj.github.io'
+  ]
+}));
+
 app.use(express.json({ limit: '20kb' }));
 
 const PORT = process.env.PORT || 3000;

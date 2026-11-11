@@ -2,6 +2,9 @@
 import { useState } from "react";
 import "../styles/chatbot.css";
 
+// Dirección del backend publicado en Render.
+const API = "https://anfibios-club-backend.onrender.com/api";
+
 // Organiza el texto de Gemini para mostrar párrafos, listas y negritas.
 function FormatearRespuesta({ texto }) {
   const lineas = texto.split("\n");
@@ -13,7 +16,11 @@ function FormatearRespuesta({ texto }) {
 
     return partes.map((parte, i) => {
       if (parte.startsWith("**") && parte.endsWith("**")) {
-        return <strong key={`${indice}-${i}`}>{parte.slice(2, -2)}</strong>;
+        return (
+          <strong key={`${indice}-${i}`}>
+            {parte.slice(2, -2)}
+          </strong>
+        );
       }
 
       return parte;
@@ -29,6 +36,7 @@ function FormatearRespuesta({ texto }) {
           ))}
         </ul>
       );
+
       lista = [];
     }
   }
@@ -41,13 +49,14 @@ function FormatearRespuesta({ texto }) {
       return;
     }
 
-    // Detecta elementos de listas numeradas o con viñetas.
-    const coincidencia = limpia.match(/^(\d+[\.\)]\s+|[-*]\s+)(.*)/);
+    // Detecta listas numeradas o con viñetas.
+    const coincidencia = limpia.match(/^(\d+[.)]\s+|[-*]\s+)(.*)/);
 
     if (coincidencia) {
       lista.push(coincidencia[2]);
     } else {
       cerrarLista();
+
       elementos.push(
         <p key={`parrafo-${indice}`}>
           {negrita(limpia, indice)}
@@ -58,7 +67,11 @@ function FormatearRespuesta({ texto }) {
 
   cerrarLista();
 
-  return <div className="respuesta-formateada">{elementos}</div>;
+  return (
+    <div className="respuesta-formateada">
+      {elementos}
+    </div>
+  );
 }
 
 function Chatbot() {
@@ -90,7 +103,7 @@ function Chatbot() {
     setCargando(true);
 
     try {
-      const respuesta = await fetch("http://localhost:3000/api/chat", {
+      const respuesta = await fetch(`${API}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +170,9 @@ function Chatbot() {
               <div
                 key={indice}
                 className={`mensaje-chat ${
-                  item.tipo === "usuario" ? "mensaje-usuario" : "mensaje-bot"
+                  item.tipo === "usuario"
+                    ? "mensaje-usuario"
+                    : "mensaje-bot"
                 }`}
               >
                 {item.tipo === "bot" ? (
@@ -175,7 +190,10 @@ function Chatbot() {
             )}
           </div>
 
-          <form className="chatbot-formulario" onSubmit={enviarMensaje}>
+          <form
+            className="chatbot-formulario"
+            onSubmit={enviarMensaje}
+          >
             <input
               type="text"
               placeholder="Escribe tu pregunta..."
@@ -184,7 +202,10 @@ function Chatbot() {
               disabled={cargando}
             />
 
-            <button type="submit" disabled={cargando || !mensaje.trim()}>
+            <button
+              type="submit"
+              disabled={cargando || !mensaje.trim()}
+            >
               Enviar
             </button>
           </form>
