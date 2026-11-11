@@ -11,12 +11,13 @@ import Admin from './components/Admin.jsx';
 import Chatbot from './components/Chatbot.jsx';
 
 export default function App() {
+
   // Panel administrativo
-  if (window.location.pathname.replace(/\/$/, '') === '/admin') {
+  if (window.location.pathname.replace(/\/$/, '').endsWith('/admin')) {
     return <Admin />;
   }
 
-  // Pagina publica
+  // Página pública
   return (
     <>
       <Navbar />

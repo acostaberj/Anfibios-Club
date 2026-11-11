@@ -3,8 +3,12 @@ export default function Estilos() {
   return (
     <section id="estilos">
 <div className="estilos-header">
-<img className="logo-espalda" src="/assets/deespalda.webp" alt="Una ranita nadando de espalda en una piscina" height="180" />
-<h2 className="title">Los 4 Estilos Principales</h2>
+<img
+  className="logo-espalda"
+  src={`${import.meta.env.BASE_URL}assets/deespalda.webp`}
+  alt="Una ranita nadando de espalda en una piscina"
+  height="180"
+/><h2 className="title">Los 4 Estilos Principales</h2>
 </div>
 <div className="grid-cards">
 <article className="card">

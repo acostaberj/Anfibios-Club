@@ -1,10 +1,13 @@
 
 /* ==========================================
    ANFIBIOS CLUB
-   Backend: Node.js + Express + SQLite + Gemini
+   Backend: Node.js + Express + PostgreSQL + Gemini
 ========================================== */
 
-// Cargar variables del archivo .env
+// ==========================================
+// 1. IMPORTAR LIBRERIAS
+// ==========================================
+
 const path = require('path');
 
 require('dotenv').config({
@@ -14,12 +17,13 @@ require('dotenv').config({
 const express = require('express');
 const cors = require('cors');
 const crypto = require('node:crypto');
-const db = require('./database');
+
+const { db, inicializarBaseDatos } = require('./database');
 
 const app = express();
 
 // ==========================================
-// CONFIGURACION DEL SERVIDOR
+// 2. CONFIGURACION DEL SERVIDOR
 // ==========================================
 
 app.use(cors());
@@ -31,17 +35,13 @@ const USER = process.env.ADMIN_USER;
 const PASSWORD = process.env.ADMIN_PASSWORD;
 const SECRET = process.env.JWT_SECRET;
 
-// ==========================================
-// CONFIGURACION DE GEMINI
-// ==========================================
-
 const geminiConfigurado = Boolean(
   process.env.GEMINI_API_KEY &&
   process.env.GEMINI_API_KEY.trim()
 );
 
 // ==========================================
-// VALIDACION DE ESTUDIANTES
+// 3. VALIDAR DATOS DEL ESTUDIANTE
 // ==========================================
 
 function datosValidos(d) {
@@ -59,7 +59,7 @@ function datosValidos(d) {
 }
 
 // ==========================================
-// RUTA DE PRUEBA DEL SERVIDOR
+// 4. RUTA DE PRUEBA
 // ==========================================
 
 app.get('/api/salud', (req, res) => {
@@ -69,10 +69,11 @@ app.get('/api/salud', (req, res) => {
 });
 
 // ==========================================
-// REGISTRO DE ESTUDIANTES
+// 5. REGISTRO DE ESTUDIANTES
 // ==========================================
 
-app.post('/api/estudiantes', (req, res) => {
+app.post('/api/estudiantes', async (req, res) => {
+  console.log("SOLICITUD RECIBIDA EN EL BACKEND");
   const d = req.body;
 
   if (!datosValidos(d)) {
@@ -82,29 +83,48 @@ app.post('/api/estudiantes', (req, res) => {
   }
 
   try {
-    const resultado = db.prepare(
-      'INSERT INTO estudiantes (nombre, fecha_nacimiento, celular, emergencia, nivel) VALUES (?, ?, ?, ?, ?)'
-    ).run(
-      d.nombre.trim(),
-      d.fechaNacimiento,
-      d.celular,
-      d.emergencia,
-      d.nivel
+    const resultado = await db.query(
+      `INSERT INTO estudiantes
+      (nombre, fecha_nacimiento, celular, emergencia, nivel)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id`,
+      [
+        d.nombre.trim(),
+        d.fechaNacimiento,
+        d.celular,
+        d.emergencia,
+        d.nivel
+      ]
+    );
+
+    console.log(
+      'ESTUDIANTE INSERTADO:',
+      resultado.rows[0]
+    );
+
+    const comprobacion = await db.query(
+      'SELECT * FROM estudiantes WHERE id = $1',
+      [resultado.rows[0].id]
+    );
+
+    console.log(
+      'REGISTRO VERIFICADO EN POSTGRESQL:',
+      comprobacion.rows[0]
     );
 
     return res.status(201).json({
       mensaje: 'Inscripción guardada correctamente.',
-      id: resultado.lastInsertRowid
+      id: resultado.rows[0].id
     });
 
   } catch (error) {
-    if (error.code?.startsWith('SQLITE_CONSTRAINT')) {
+    if (error.code === '23505') {
       return res.status(409).json({
         mensaje: 'Este estudiante ya está registrado.'
       });
     }
 
-    console.error(error);
+    console.error('ERROR AL GUARDAR ESTUDIANTE:', error);
 
     return res.status(500).json({
       mensaje: 'No se pudo guardar la inscripción.'
@@ -113,7 +133,7 @@ app.post('/api/estudiantes', (req, res) => {
 });
 
 // ==========================================
-// GENERACION DE TOKEN
+// 6. GENERAR TOKEN DEL ADMINISTRADOR
 // ==========================================
 
 function firmar(payload) {
@@ -130,7 +150,7 @@ function firmar(payload) {
 }
 
 // ==========================================
-// VALIDACION DE TOKEN
+// 7. VALIDAR TOKEN
 // ==========================================
 
 function validarToken(req, res, next) {
@@ -190,14 +210,14 @@ function validarToken(req, res, next) {
     next();
 
   } catch {
-    res.status(401).json({
+    return res.status(401).json({
       mensaje: 'La sesión caducó. Inicia sesión otra vez.'
     });
   }
 }
 
 // ==========================================
-// INICIO DE SESION DEL ADMINISTRADOR
+// 8. INICIO DE SESION DEL ADMINISTRADOR
 // ==========================================
 
 app.post('/api/admin/login', (req, res) => {
@@ -208,7 +228,7 @@ app.post('/api/admin/login', (req, res) => {
     SECRET.length < 32
   ) {
     return res.status(503).json({
-      mensaje: 'Primero configura backend/.env (consulta README).'
+      mensaje: 'Primero configura las variables del administrador.'
     });
   }
 
@@ -230,7 +250,7 @@ app.post('/api/admin/login', (req, res) => {
     });
   }
 
-  res.json({
+  return res.json({
     token: firmar({
       usuario: USER,
       exp: Date.now() + 8 * 60 * 60 * 1000
@@ -239,25 +259,35 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // ==========================================
-// CONSULTAR ESTUDIANTES
+// 9. CONSULTAR ESTUDIANTES
 // ==========================================
 
-app.get('/api/admin/estudiantes', validarToken, (req, res) => {
-  res.json(
-    db.prepare(
+app.get('/api/admin/estudiantes', validarToken, async (req, res) => {
+  try {
+    const resultado = await db.query(
       'SELECT * FROM estudiantes ORDER BY id DESC'
-    ).all()
-  );
+    );
+
+    res.json(resultado.rows);
+
+  } catch (error) {
+    console.error('Error al consultar estudiantes:', error);
+
+    res.status(500).json({
+      mensaje: 'No se pudieron consultar los estudiantes.'
+    });
+  }
 });
 
 // ==========================================
-// EDITAR ESTUDIANTES
+// 10. EDITAR ESTUDIANTES
 // ==========================================
 
-app.put('/api/admin/estudiantes/:id', validarToken, (req, res) => {
+app.put('/api/admin/estudiantes/:id', validarToken, async (req, res) => {
   const d = {
     ...req.body,
-    fechaNacimiento: req.body?.fecha_nacimiento
+    fechaNacimiento: req.body?.fechaNacimiento ||
+      req.body?.fecha_nacimiento
   };
 
   if (!datosValidos(d)) {
@@ -267,18 +297,26 @@ app.put('/api/admin/estudiantes/:id', validarToken, (req, res) => {
   }
 
   try {
-    const resultado = db.prepare(
-      'UPDATE estudiantes SET nombre=?, fecha_nacimiento=?, celular=?, emergencia=?, nivel=? WHERE id=?'
-    ).run(
-      d.nombre.trim(),
-      d.fechaNacimiento,
-      d.celular,
-      d.emergencia,
-      d.nivel,
-      req.params.id
+    const resultado = await db.query(
+      `UPDATE estudiantes
+       SET nombre = $1,
+           fecha_nacimiento = $2,
+           celular = $3,
+           emergencia = $4,
+           nivel = $5
+       WHERE id = $6
+       RETURNING id`,
+      [
+        d.nombre.trim(),
+        d.fechaNacimiento,
+        d.celular,
+        d.emergencia,
+        d.nivel,
+        req.params.id
+      ]
     );
 
-    if (!resultado.changes) {
+    if (resultado.rowCount === 0) {
       return res.status(404).json({
         mensaje: 'No existe ese estudiante.'
       });
@@ -289,11 +327,13 @@ app.put('/api/admin/estudiantes/:id', validarToken, (req, res) => {
     });
 
   } catch (error) {
-    if (error.code?.startsWith('SQLITE_CONSTRAINT')) {
+    if (error.code === '23505') {
       return res.status(409).json({
         mensaje: 'Ya existe un estudiante con ese nombre y fecha.'
       });
     }
+
+    console.error('Error al actualizar:', error);
 
     res.status(500).json({
       mensaje: 'No se pudo actualizar.'
@@ -302,27 +342,37 @@ app.put('/api/admin/estudiantes/:id', validarToken, (req, res) => {
 });
 
 // ==========================================
-// ELIMINAR ESTUDIANTES
+// 11. ELIMINAR ESTUDIANTES
 // ==========================================
 
-app.delete('/api/admin/estudiantes/:id', validarToken, (req, res) => {
-  const resultado = db.prepare(
-    'DELETE FROM estudiantes WHERE id=?'
-  ).run(req.params.id);
+app.delete('/api/admin/estudiantes/:id', validarToken, async (req, res) => {
+  try {
+    const resultado = await db.query(
+      'DELETE FROM estudiantes WHERE id = $1 RETURNING id',
+      [req.params.id]
+    );
 
-  if (!resultado.changes) {
-    return res.status(404).json({
-      mensaje: 'No existe ese estudiante.'
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({
+        mensaje: 'No existe ese estudiante.'
+      });
+    }
+
+    res.json({
+      mensaje: 'Estudiante eliminado.'
+    });
+
+  } catch (error) {
+    console.error('Error al eliminar estudiante:', error);
+
+    res.status(500).json({
+      mensaje: 'No se pudo eliminar el estudiante.'
     });
   }
-
-  res.json({
-    mensaje: 'Estudiante eliminado.'
-  });
 });
 
 // ==========================================
-// CONOCIMIENTO DE ANFIBIOS CLUB
+// 12. INFORMACION DE ANFIBIOS CLUB
 // ==========================================
 
 const informacionClub = `
@@ -401,19 +451,16 @@ La página cuenta con un formulario de inscripción que solicita:
 Los niveles que aparecen en el formulario son:
 básico, intermedio y avanzado.
 
-La información enviada por el formulario se registra en el sistema
-de Anfibios Club.
-
 INFORMACION QUE NO ESTA DEFINIDA:
-La página consultada no especifica precios, horarios, dirección exacta,
+La página no especifica precios, horarios, dirección exacta,
 duración de los cursos ni disponibilidad de cupos.
 No debes inventar estos datos.
-Cuando una persona pregunte por ellos, recomiéndale comunicarse
-directamente con Anfibios Club mediante sus canales de contacto.
+Cuando una persona pregunte por ellos, recomienda comunicarse
+directamente con Anfibios Club.
 `;
 
 // ==========================================
-// INTELIGENCIA ARTIFICIAL - GEMINI
+// 13. CHATBOT CON GEMINI
 // ==========================================
 
 app.post('/api/chat', async (req, res) => {
@@ -509,18 +556,25 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ==========================================
-// INICIAR SERVIDOR
+// 14. INICIAR SERVIDOR
 // ==========================================
 
-app.listen(PORT, () => {
-  console.log('Base de datos conectada correctamente.');
+async function iniciarServidor() {
+  try {
+    await inicializarBaseDatos();
+   
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log('API disponible en el puerto ' + PORT);
+      console.log(
+        'Inteligencia artificial configurada:',
+        geminiConfigurado
+      );
+    });
 
-  console.log(
-    'API disponible en http://localhost:' + PORT
-  );
+  } catch (error) {
+    console.error('No se pudo iniciar el servidor:', error);
+    process.exit(1);
+  }
+}
 
-  console.log(
-    'Inteligencia artificial configurada:',
-    geminiConfigurado
-  );
-});
+iniciarServidor();

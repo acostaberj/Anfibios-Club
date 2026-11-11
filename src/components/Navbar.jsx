@@ -2,7 +2,11 @@ export default function Navbar() {
  return (<header>
 <div className="header-container">
 <div className="brand-box">
-<img className="logo" src="/assets/desalto.webp" alt="Logo de Anfibios Club" />
+<img
+  className="logo"
+  src={`${import.meta.env.BASE_URL}assets/desalto.webp`}
+  alt="Logo de Anfibios Club"
+/>
 <h1 className="main-title">ANFIBIOS CLUB</h1>
 </div>
 <nav className="main-nav">

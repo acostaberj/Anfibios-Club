@@ -1,47 +1,65 @@
 
-/* =====================================================
-   PROYECTO: ANFIBIOS CLUB
-   ARCHIVO: database.js
-   DESCRIPCIÓN: Configuración de la base de datos
-===================================================== */
+const { Pool } = require("pg");
 
-const Database = require("better-sqlite3");
-const path = require("path");
-const fs = require("fs");
+// ==========================================
+// CONEXIÓN CON POSTGRESQL - NEON
+// ==========================================
 
-// Detectar si estamos en Render o en desarrollo local
-const rutaBaseDatos = process.env.RENDER
-  ? "/var/data/anfibios.db"
-  : path.join(__dirname, "anfibios.db");
-
-// Crear la carpeta si no existe
-fs.mkdirSync(path.dirname(rutaBaseDatos), {
-  recursive: true
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-// Conectar con SQLite
-const db = new Database(rutaBaseDatos);
+// ==========================================
+// INICIALIZAR BASE DE DATOS
+// ==========================================
 
-// Crear tabla de estudiantes
-db.exec(`
+async function inicializarBaseDatos() {
+
+  // Crear tabla de estudiantes
+  await db.query(`
     CREATE TABLE IF NOT EXISTS estudiantes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        fecha_nacimiento TEXT NOT NULL,
-        celular TEXT NOT NULL,
-        emergencia TEXT NOT NULL,
-        nivel TEXT NOT NULL,
-        fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
+      id SERIAL PRIMARY KEY,
+      nombre TEXT NOT NULL,
+      fecha_nacimiento TEXT NOT NULL,
+      celular TEXT NOT NULL,
+      emergencia TEXT NOT NULL,
+      nivel TEXT NOT NULL,
+      fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
-`);
+  `);
 
-// Evitar estudiantes duplicados
-db.exec(`
+  // Evitar registros duplicados
+  await db.query(`
     CREATE UNIQUE INDEX IF NOT EXISTS
     idx_estudiante_nombre_fecha
     ON estudiantes (LOWER(TRIM(nombre)), fecha_nacimiento)
-`);
+  `);
 
-module.exports = db;
+  // ==========================================
+  // COMPROBAR CONEXIÓN
+  // ==========================================
 
-console.log("Base de datos conectada correctamente.");
+  const resultado = await db.query(`
+    SELECT
+      current_database() AS base_datos,
+      current_user AS usuario,
+      current_schema() AS esquema
+  `);
+
+  console.log("Base de datos PostgreSQL conectada correctamente.");
+
+  console.log("Conexión utilizada:", resultado.rows[0]);
+
+}
+
+// ==========================================
+// EXPORTAR CONEXIÓN Y FUNCIÓN
+// ==========================================
+
+module.exports = {
+  db,
+  inicializarBaseDatos
+};

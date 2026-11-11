@@ -2,8 +2,12 @@
 export default function Inicio() {
   return (
     <section id="inicio">
-<img className="logo-espalda" src="/assets/desaltoinicio.webp" alt="Una ranita nadando de espalda en una piscina" height="180" />
-<p className="lema">¡Bienvenido a Anfibios Club!</p>
+<img
+  className="logo-espalda"
+  src={`${import.meta.env.BASE_URL}assets/desaltoinicio.webp`}
+  alt="Una ranita nadando de espalda en una piscina"
+  height="180"
+/><p className="lema">¡Bienvenido a Anfibios Club!</p>
 <p className="lema">Respira profundo, el agua te escucha.</p>
 <p className="texto-inicio">
 <strong>Anfibios Club</strong> es mucho más que un grupo deportivo: somos una familia.

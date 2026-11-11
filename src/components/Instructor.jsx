@@ -24,8 +24,10 @@ export default function Instructor() {
             estilos.</li>
 </ul>
 <div className="foto-instructor">
-<img src="/assets/WhatsApp Image 2026-09-01 at 12.33.45 AM.jpeg" alt="Foto del Instructor" />
-<blockquote>
+<img
+  src={`${import.meta.env.BASE_URL}assets/WhatsApp Image 2026-09-01 at 12.33.45 AM.jpeg`}
+  alt="Foto del Instructor"
+/><blockquote>
 <p><em>"Mi mayor satisfacción es ver a alguien que no se atrevía a meter la cabeza al agua, terminar el mes
                 haciendo su primer clavado con una sonrisa."</em></p>
 </blockquote>
